@@ -66,18 +66,30 @@ AutoTypeFilter.prototype.getEntryRank = function(entry) {
                 if (entryUrlParts[1] === this.urlParts[1]) {
                     rank += 1;
                 }
+            } else if (this.isSubdomain(entryUrlParts[2], this.urlParts[2])) {
+                rank += 5;
+            } else if (entry.searchText.indexOf(this.urlLower) >= 0) {
+                // the url is in some field; include it
+                rank += 5;
             } else {
-                if (entry.searchText.indexOf(this.urlLower) >= 0) {
-                    // the url is in some field; include it
-                    rank += 5;
-                } else {
-                    // another domain; don't show this record at all, ignore title match
-                    return 0;
-                }
+                // another domain; don't show this record at all, ignore title match
+                return 0;
             }
         }
     }
     return rank;
+};
+
+AutoTypeFilter.prototype.isSubdomain = function(domain1, domain2) {
+    const d1Parts = domain1.split('.');
+    const d2Parts = domain2.split('.');
+
+    if (d1Parts != null && d1Parts.length > 1 && d2Parts != null && d2Parts.length > 1) {
+        const d1Domain = d1Parts[d1Parts.length - 2] + '.' + d1Parts[d1Parts.length - 1];
+        const d2Domain = d2Parts[d2Parts.length - 2] + '.' + d2Parts[d2Parts.length - 1];
+        return d1Domain === d2Domain;
+    }
+    return false;
 };
 
 AutoTypeFilter.prototype.getStringRank = function(s1, s2) {
