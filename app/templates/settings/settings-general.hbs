@@ -146,6 +146,13 @@
     <div class="settings__general-prv-wrap settings__general-{{prv.name}} {{#ifeq prv.enabled false}}hide{{/ifeq}}"></div>
     {{/each}}
 
+    <h2>KeePass Http Server</h2>
+    <div>
+        <input type="checkbox" class="settings__input input-base settings__general-keepass-http-server" id="settings__general-keepass-http-server"
+               {{#if keePassHttpServer}}checked{{/if}} />
+        <label for="settings__general-keepass-http-server">Start KeePass Http Server on startup.</label>
+    </div>
+
     <h2>{{res 'advanced'}}</h2>
     <a class="settings__general-show-advanced">{{res 'setGenShowAdvanced'}}</a>
     <div class="settings__general-advanced hide">
@@ -154,5 +161,6 @@
         <button class="btn-silent settings__general-try-beta-link">{{res 'setGenTryBeta'}}</button>
         {{/if}}
         <button class="btn-silent settings__general-show-logs-link">{{res 'setGenShowAppLogs'}}</button>
+        <button class="btn-silent settings__general-keepass-http-server-link">Start KeePassHttp Server</button>
     </div>
 </div>

@@ -220,6 +220,16 @@ if (window.process && window.process.versions && window.process.versions.electro
         },
         platform: function() {
             return process.platform;
+        },
+        startKeePassHttpServer: function () {
+            logger.info('Starting KeePassHttp server...');
+            const started = this.remoteApp().startKeePassHttpServer();
+            if (started) {
+                logger.info('Started KeePassHttp server on port 19455');
+            } else {
+                logger.warn('Failed to start KeePassHttp Server.');
+            }
+            return started;
         }
     };
     Backbone.on('launcher-exit-request', () => {

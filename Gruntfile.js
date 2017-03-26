@@ -115,6 +115,14 @@ module.exports = function(grunt) {
             new webpack.IgnorePlugin(/^(moment)$/),
             new StringReplacePlugin(),
             new StatsPlugin('stats.json', { chunkModules: true })
+            // ,
+            // new webpack.optimize.UglifyJsPlugin({
+            //     beautify: false,
+            //     mangle: { 'screw_ie8': true, 'keep_fnames': true },
+            //     exclude: [],
+            //     compress: { 'screw_ie8': true, warnings: false },
+            //     comments: false
+            // })
         ],
         node: {
             console: false,
@@ -348,21 +356,21 @@ module.exports = function(grunt) {
                     'app-category-type': 'public.app-category.productivity',
                     'extend-info': 'package/osx/extend.plist'
                 }
-            },
-            win32: {
-                options: {
-                    platform: 'win32',
-                    arch: ['ia32', 'x64'],
-                    icon: 'graphics/icon.ico',
-                    'build-version': pkg.version,
-                    'version-string': {
-                        'CompanyName': 'KeeWeb',
-                        'FileDescription': pkg.description,
-                        'OriginalFilename': 'KeeWeb.exe',
-                        'ProductName': 'KeeWeb',
-                        'InternalName': 'KeeWeb'
-                    }
-                }
+            // },
+            // win32: {
+            //     options: {
+            //         platform: 'win32',
+            //         arch: ['ia32', 'x64'],
+            //         icon: 'graphics/icon.ico',
+            //         'build-version': pkg.version,
+            //         'version-string': {
+            //             'CompanyName': 'KeeWeb',
+            //             'FileDescription': pkg.description,
+            //             'OriginalFilename': 'KeeWeb.exe',
+            //             'ProductName': 'KeeWeb',
+            //             'InternalName': 'KeeWeb'
+            //         }
+            //     }
             }
         },
         compress: {
@@ -628,22 +636,22 @@ module.exports = function(grunt) {
 
     grunt.registerTask('build-desktop-update', [
         'compress:desktop-update',
-        'sign-archive:desktop-update',
-        'validate-desktop-update'
+        'sign-archive:desktop-update' // ,
+        // 'validate-desktop-update'
     ]);
 
     grunt.registerTask('build-desktop-executables', [
         'electron',
-        'sign-exe:win32-build-x64',
-        'sign-exe:win32-build-ia32',
-        'copy:desktop-darwin-helper-x64',
-        'copy:desktop-windows-helper-ia32',
-        'copy:desktop-windows-helper-x64'
+        // 'sign-exe:win32-build-x64',
+        // 'sign-exe:win32-build-ia32',
+        'copy:desktop-darwin-helper-x64' // ,
+        // 'copy:desktop-windows-helper-ia32',
+        // 'copy:desktop-windows-helper-x64'
     ]);
 
     grunt.registerTask('build-desktop-archives', [
-        'compress:win32-x64',
-        'compress:win32-ia32',
+        // 'compress:win32-x64',
+        // 'compress:win32-ia32',
         'compress:linux-x64',
         'compress:linux-ia32'
     ]);
@@ -671,7 +679,7 @@ module.exports = function(grunt) {
 
     grunt.registerTask('build-desktop-dist', [
         'build-desktop-dist-darwin',
-        'build-desktop-dist-win32',
+        // 'build-desktop-dist-win32',
         'build-desktop-dist-linux'
     ]);
 

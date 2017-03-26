@@ -18,6 +18,7 @@ const FeatureDetector = require('../util/feature-detector');
 const Format = require('../util/format');
 const UrlUtil = require('../util/url-util');
 const AutoType = require('../auto-type');
+const KeePassHttp = require('../keepass-http');
 
 require('../mixins/protected-value-ex');
 
@@ -47,6 +48,7 @@ const AppModel = Backbone.Model.extend({
 
     prepare: function() {
         AutoType.init(this);
+        KeePassHttp.init(this);
         _.forEach(Storage, prv => prv.init());
     },
 

@@ -3,6 +3,9 @@
         <i class="modal__icon fa fa-{{icon}}"></i>
         <div class="modal__header">{{{header}}}</div>
         <div class="modal__body">
+            {{#if input}}
+            <div class="modal__input-wrap"><label for="modal__input">{{input}}: </label><input type="text" id="modal__input" /></div>
+            {{/if}}
             {{{body}}}
             {{#if checkbox}}
             <div class="modal__check-wrap"><input type="checkbox" id="modal__check" /><label for="modal__check">{{checkbox}}</label></div>

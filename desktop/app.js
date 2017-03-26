@@ -331,3 +331,60 @@ function subscribePowerEvents() {
         emitBackboneEvent('power-monitor-resume');
     });
 }
+
+app.startKeePassHttpServer = function () {
+    console.dir('Starting KeePassHttp server...');
+    const express = require('express');
+    const bodyParser = require('body-parser');
+    const keePassHttpRequests = {};
+    const ipcMain = electron.ipcMain;
+    ipcMain.on('keepasshttp-status-message', (event, response) => {
+        let keePassReq = keePassHttpRequests[response.requestId];
+        if(keePassReq) {
+            keePassReq.response = response.response;
+            keePassReq.status = response.status;
+        }
+    });
+    const server = express();
+    let reqCount = 0;
+    server.use(bodyParser.json());
+    server.post('/', (req, res) => {
+        // console.dir(req);
+        console.log('Received HTTP Request: ', req.body);
+        const keePassReq = {
+            'request': req.body,
+            'response': null,
+            'status': 'init',
+            'requestId': ++reqCount
+        };
+        console.log('KeePassHTTP Request: ', keePassReq);
+        keePassHttpRequests[keePassReq.requestId] = keePassReq;
+        console.log('IpcMain.keePassHttpRequests: ', keePassHttpRequests);
+        emitBackboneEvent('http-request', keePassReq);
+        req.on('close', () => { keePassReq.status = 'disconnected'; });
+        const interval = setInterval(() => {
+            //console.log('============================> KeePassHTTP Request: ', keePassHttpRequests);
+            if (keePassReq.status === 'init' && keePassReq.response === null) {
+                return;
+            }
+
+            clearInterval(interval);
+            if (keePassReq.status === 'disconnected') {
+                return;
+            }
+            console.log('KeePassHTTP Response: ', keePassReq);
+            console.log('Seding HTTP Response: ', keePassReq.response);
+            console.log("\n");
+            if(keePassReq.response.Error != null) {
+                res.status(400).json(keePassReq.response);
+            } else {
+                res.json(keePassReq.response);
+            }
+
+            delete keePassHttpRequests[keePassReq.requestId];
+        }, 1000);
+    });
+    server.listen(19455);
+    console.dir('Started KeePassHttp server on port 19455');
+    return true;
+};

@@ -42,7 +42,9 @@ const SettingsGeneralView = Backbone.View.extend({
         'click .settings__general-show-advanced': 'showAdvancedSettings',
         'click .settings__general-dev-tools-link': 'openDevTools',
         'click .settings__general-try-beta-link': 'tryBeta',
-        'click .settings__general-show-logs-link': 'showLogs'
+        'click .settings__general-show-logs-link': 'showLogs',
+        'click .settings__general-keepass-http-server-link': 'startKeePassHttpServer',
+        'change .settings__general-keepass-http-server': 'changeKeePassHttpServer'
     },
 
     views: null,
@@ -113,7 +115,8 @@ const SettingsGeneralView = Backbone.View.extend({
             updateManual: updateManual,
             releaseNotesLink: Links.ReleaseNotes,
             colorfulIcons: AppSettingsModel.instance.get('colorfulIcons'),
-            storageProviders: storageProviders
+            storageProviders: storageProviders,
+            keePassHttpServer: AppSettingsModel.instance.get('keePassHttpServer')
         });
         this.renderProviderViews(storageProviders);
     },
@@ -334,6 +337,17 @@ const SettingsGeneralView = Backbone.View.extend({
 
     scrollToBottom: function() {
         this.$el.closest('.scroller').scrollTop(this.$el.height());
+    },
+
+    startKeePassHttpServer: function() {
+        if (Launcher) {
+            Launcher.startKeePassHttpServer();
+        }
+    },
+
+    changeKeePassHttpServer: function(e) {
+        const keePassHttpServer = e.target.checked || false;
+        AppSettingsModel.instance.set('keePassHttpServer', keePassHttpServer);
     }
 });
 
