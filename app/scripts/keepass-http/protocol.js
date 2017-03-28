@@ -10,94 +10,25 @@ const logger = new Logger('keepass-http');
 
 const Protocol = {
 
+    init(handlers) {
+        this.handlers = handlers;
+    },
+
     verifyRequest: function (request, aes, callback) {
-        const entry = AppSettingsModel.instance.get('keepass_uuid');
+        const entry = this.handlers.GetConfigEntry(false);
         if (entry == null) {
             callback(false);
             return;
         }
-        const s = entry['aes_key' + request.Id];
+        const s = entry.fields[this.handlers.ASSOCIATE_KEY_PREFIX + request.Id];
         if (s == null) {
             callback(false);
             return;
         }
 
-        this.TestRequestVerifier(request, aes, s, callback);
+        this.TestRequestVerifier(request, aes, s.getText(), callback);
     },
 
-    // TestRequestVerifier1: async function (request, aes, key) {
-    //     let success = false;
-    //     const crypted = CryptoHelper.base64Decode(request.Verifier);
-    //     logger.info('crypted1', Array.apply([], crypted).join(","));
-
-    //     aes.Key = CryptoHelper.base64Decode(key);
-    //     logger.info('Key1', Array.apply([], aes.Key).join(","));
-    //     aes.IV = CryptoHelper.base64Decode(request.Nonce);
-    //     logger.info('IV1', Array.apply([], aes.IV).join(","));
-
-    //     // aes.importKey(ByteUtils.arrayToBuffer(aes.Key)).then(() => {
-    //     await aes.importKey(aes.Key);
-    //     success = await aes.decrypt(crypted, aes.IV).then(result => {
-    //         logger.info('result1', Array.apply([], new Uint8Array(result)).join(","));
-    //         let value = CryptoHelper.convertByteArrayToString(new Uint8Array(result));
-    //         logger.info('value', value);
-    //         return value === request.Nonce;
-    //     });
-
-    //     return success;
-    // },
-
-    // // ##########################################
-    // // ########## Async implimentation ##########
-    // // ##########################################
-    // TestRequestVerifier: async function (request, aes, key) {
-    //     let success = false;
-    //     const crypted = ByteUtils.base64ToBytes(request.Verifier);
-    //     // logger.info('crypted', Array.apply([], crypted).join(","));
-
-    //     aes.Key = ByteUtils.base64ToBytes(key);
-    //     // logger.info('Key', Array.apply([], aes.Key).join(","));
-    //     aes.IV = ByteUtils.base64ToBytes(request.Nonce);
-    //     // logger.info('IV', Array.apply([], aes.IV).join(','));
-
-    //     await aes.importKey(aes.Key);
-    //     success = await aes.decrypt(crypted, aes.IV).then(result => {
-    //         // logger.info('result', Array.apply([], new Uint8Array(result)).join(","));
-    //         const value = ByteUtils.bytesToString(result);
-    //         // logger.info('value', value);
-    //         return value === request.Nonce;
-    //     });
-
-    //     return success;
-    // },
-
-    // SetResponseVerifier: function (response, aes) {
-    //     aes.IV = kdbxweb.Random.getBytes(16);
-    //     response.Nonce = ByteUtils.bytesToBase64(aes.IV);
-    //     response.Verifier = this.CryptoTransform(response.Nonce, false, true, aes, 'ENCRYPT');
-    // },
-
-    // CryptoTransform: async function(input, base64in, base64out, aes, mode) {
-    //     let bytes;
-    //     if (base64in) {
-    //         bytes = ByteUtils.base64ToBytes(input);
-    //     } else {
-    //         bytes = ByteUtils.stringToBytes(input);
-    //     }
-
-    //     let buf;
-    //     if (mode === 'ENCRYPT') {
-    //         buf = await aes.encrypt(bytes, aes.IV);
-    //     } else if (mode === 'DECRYPT') {
-    //         buf = await aes.decrypt(bytes, aes.IV);
-    //     }
-
-    //     return base64out ? ByteUtils.bytesToBase64(buf) : ByteUtils.bytesToString(buf);
-    // }
-
-    // ##########################################
-    // ########## Async implimentation ##########
-    // ##########################################
     TestRequestVerifier: function (request, aes, key, callback) {
         const crypted = ByteUtils.base64ToBytes(request.Verifier);
         // logger.info('crypted', Array.apply([], crypted).join(","));

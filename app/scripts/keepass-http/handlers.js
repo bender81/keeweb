@@ -8,6 +8,8 @@ const Launcher = require('../comp/launcher');
 const Alerts = require('../comp/alerts');
 const Timeouts = require('../const/timeouts');
 const EntryModel = require('../models/entry-model')
+const KeePassHttpFilter = require('./filter');
+const KeePassResponseEntry = KeePassResponse.KeePassResponseEntry;
 
 const Logger = require('../util/logger');
 const logger = new Logger('keepass-http.handlers');
@@ -19,6 +21,7 @@ const Handlers = {
 
     init(appModel) {
         this.appModel = appModel;
+        Protocol.init(this);
         return this;
     },
 
@@ -173,13 +176,64 @@ const Handlers = {
             if (!isValidRequest) {
                 response.Success = false;
                 callback(response);
-            } else {
-                response.Success = true;
-                // response.Id = request.Id;
-                Protocol.SetResponseVerifier(response, aes, callback);
+                return;
             }
+            
+            Protocol.CryptoTransform(request.Url, true, false, aes, 'DECRYPT', (host) => {
+                let searchHost = request.SubmitUrl;
+                if(!searchHost || searchHost == null) {
+                    searchHost = request.Url;
+                }
+                if (searchHost != null) {
+                    Protocol.CryptoTransform(searchHost, true, false, aes, 'DECRYPT', (submitUrl) => {
+                        const searchFilter = new KeePassHttpFilter({'title': submitUrl, 'url': submitUrl}, this.appModel);
+                        const entries = searchFilter.getEntries();
+                        if(entries.length <= 0) {
+                            response.Success = true;
+                            // response.Id = request.Id;
+                            Protocol.SetResponseVerifier(response, aes, callback);
+                            return;
+                        }
+                        
+                        Protocol.SetResponseVerifier(response, aes, (response) => {
+                            response.Entries = [];
+                            entries.forEach((e, index, entityArray) => {
+                                let entry = this.PrepareResponseEntry(e);
+                                Protocol.CryptoTransform(entry.Name, false, true, aes, 'ENCRYPT', (name) => {
+                                    entry.Name = name;
+                                    Protocol.CryptoTransform(entry.Login, false, true, aes, 'ENCRYPT', (login) => {
+                                        entry.Login = login;
+                                        Protocol.CryptoTransform(entry.Uuid, false, true, aes, 'ENCRYPT', (uuid) => {
+                                            entry.Uuid = uuid;
+                                            Protocol.CryptoTransform(entry.Password, false, true, aes, 'ENCRYPT', (password) => {
+                                                entry.Password = password;
+                                                response.Entries.push(entry);
+
+                                                if(index === (entityArray.length - 1) ) {
+                                                    response.Success = true;
+                                                    response.Count = entityArray.length;
+                                                    callback(response);
+                                                }
+                                            });
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                }
+            });
         });
-    }
+    },
+
+    PrepareResponseEntry(entry) {
+            const name = entry.title;
+            const login = entry.user;
+            const passwd = entry.password;
+            const uuid = ByteUtils.bytesToHex(entry.entry.uuid.toBytes());            
+            const fields = null;
+            return new KeePassResponseEntry(name, login, passwd, uuid, fields);
+        }
 
 };
 
